@@ -1,6 +1,9 @@
 package lipid;
 
-public class Peak {
+/**
+ * Class that represent a peak and their values of the spector in mass spectrometry
+ */
+public class Peak implements Comparable<Peak> {
 
     private final double mz;
     private final double intensity;
@@ -34,5 +37,10 @@ public class Peak {
         if (!(obj instanceof Peak)) return false;
         Peak other = (Peak) obj;
         return Double.compare(mz, other.mz) == 0;
+    }
+
+    @Override
+    public int compareTo(Peak other) {
+        return Double.compare(this.mz, other.mz);
     }
 }
