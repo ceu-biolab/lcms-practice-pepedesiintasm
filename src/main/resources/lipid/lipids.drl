@@ -1,27 +1,145 @@
-
 package lipid;
 
 unit LipidScoreUnit;
 
-// TODO Include here rules and queries to fulfill the practice requirements
+//----------POSITIVE EVIDENCE------------
 
-
-// This is one example of rules that only prints the factorial combination of all pairs eliminating the A-A combination.
-// !! TODO This rule does not include the lipid type, you shall add it.
-// !! TODO Rule that states that the same lipid type with the same number of double bonds and a higher number of carbons should have a higher RT
-// !! TODO
-rule "Score 1 for lipid pair with increasing RT and carbon count"
+//RT(L1) > RT (L2) if L1 Lipid Type == L2 LypidType; L1 Double Bonds == L2 Double bonds and L1 carbons > L2 carbons.
+rule "R1: Score +1 if: same TYPE, same DB, higher C1 so: higher RT1"
 when
-    $a1 : /annotations [$rt1 : rtMin, $carbonCount1 : lipid.getCarbonCount(), $doubleBondCount : lipid.getDoubleBondsCount()]
-    $a2 : /annotations [this!= $a1, lipid.getDoubleBondsCount() == $doubleBondCount,
-    rtMin > $rt1, lipid.getCarbonCount() > $carbonCount1]
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $c1: lipid.getCarbonCount(),
+        $db: lipid.getDoubleBondsCount(),
+        $type: lipid.getLipidType()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        lipid.getLipidType() == $type,
+        lipid.getDoubleBondsCount() == $db,
+        lipid.getCarbonCount() < $c1,
+        rtMin < $rt1
+    ]
 then
-    // in this case, the only change is the addition of the score, but the fact does not change so we do not break the principle of refractoriness
     $a1.addScore(1);
     $a2.addScore(1);
-    // !! TODO ONLY FOR DEBUGGING
-    System.out.println("Scored 1 for annotations: " + $a1 + " and " + $a2);
 end
 
+//RT(L1) > RT (L2) if L1 Lipid Type == L2 LypidType; L1 Double Bonds < L2 Double bonds and L1 carbons == L2 carbons.
+rule "R2: Score +1 if: same TYPE, lower DB1, same C so: higher RT1"
+when
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $c1: lipid.getCarbonCount(),
+        $db: lipid.getDoubleBondsCount(),
+        $type: lipid.getLipidType()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        lipid.getLipidType() == $type,
+        lipid.getDoubleBondsCount() > $db,
+        lipid.getCarbonCount() == $c1,
+        rtMin < $rt1
+    ]
+then
+    $a1.addScore(1);
+    $a2.addScore(1);
+end
 
-// !! TODO NEXT RULE: Negative evidence. If the RT follows the opposite order than the previous one, then the addScore should be -1.
+//RT(L1) > RT (L2) if L1 Lipid Type != L2 LypidType; L1 Double Bonds == L2 Double bonds and L1 carbons == L2 carbons according to this pattern: -> PG < PE < PI < PA < PS << PC
+rule "R3: Score +1 if: different TYPE (follow elution order: PG < PE < PI < PA < PS < PC), same DB, same C so: higher RT1"
+when
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $type1: lipid.getLipidType(),
+        $c1: lipid.getCarbonCount(),
+        $db1: lipid.getDoubleBondsCount()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        $lipid2: lipid,
+        $type2: lipid.getLipidType(),
+        lipid.getCarbonCount() == $c1,
+        lipid.getDoubleBondsCount() == $db1,
+        Lipid.lipidTypeRank($type2) > Lipid.lipidTypeRank($type1),
+        rtMin > $rt1
+    ]
+then
+    $a1.addScore(1);
+    $a2.addScore(1);
+end
+
+//----------NEGATIVE EVIDENCE------------
+
+//RT(L1) < RT (L2) if L1 Lipid Type == L2 LypidType; L1 Double Bonds == L2 Double bonds and L1 carbons > L2 carbons.
+rule "R4: Score -1 if: same TYPE, same DB, higher C1 so: lower RT1"
+when
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $c1: lipid.getCarbonCount(),
+        $db: lipid.getDoubleBondsCount(),
+        $type: lipid.getLipidType()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        lipid.getLipidType() == $type,
+        lipid.getDoubleBondsCount() == $db,
+        lipid.getCarbonCount() < $c1,
+        rtMin > $rt1
+    ]
+then
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+end
+
+//RT(L1) < RT (L2) if L1 Lipid Type == L2 LypidType; L1 Double Bonds < L2 Double bonds and L1 carbons == L2 carbons.
+rule "R5: Score -1 if: same TYPE, lower DB1, same C so: lower RT1"
+when
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $c1: lipid.getCarbonCount(),
+        $db: lipid.getDoubleBondsCount(),
+        $type: lipid.getLipidType()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        lipid.getLipidType() == $type,
+        lipid.getDoubleBondsCount() > $db,
+        lipid.getCarbonCount() == $c1,
+        rtMin > $rt1
+    ]
+then
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+end
+
+//RT(L1) < RT (L2) if L1 Lipid Type != L2 LypidType; L1 Double Bonds == L2 Double bonds and L1 carbons == L2 carbons according to this pattern: -> PG < PE < PI < PA < PS << PC.
+rule "R6: Score -1 if: different TYPE (follow elution order: PG < PE < PI < PA < PS < PC), same DB, same C so: higher RT"
+when
+    $a1: /annotations[
+        $rt1: rtMin,
+        $lipid1: lipid,
+        $type1: lipid.getLipidType(),
+        $c1: lipid.getCarbonCount(),
+        $db1: lipid.getDoubleBondsCount()
+    ]
+    $a2: /annotations[
+        this != $a1,
+        $rt2: rtMin,
+        $lipid2: lipid,
+        $type2: lipid.getLipidType(),
+        lipid.getCarbonCount() == $c1,
+        lipid.getDoubleBondsCount() == $db1,
+        Lipid.lipidTypeRank($type2) > Lipid.lipidTypeRank($type1),
+        $rt2 < $rt1
+    ]
+
+then
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+end

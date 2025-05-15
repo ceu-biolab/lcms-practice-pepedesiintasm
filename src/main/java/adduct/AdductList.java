@@ -23,13 +23,12 @@ public class AdductList {
         MAPMZPOSITIVEADDUCTS = Collections.unmodifiableMap(mapMZPositiveAdductsTMP);
 
         Map<String, Double> mapMZNegativeAdductsTMP = new LinkedHashMap<>();
-        mapMZNegativeAdductsTMP.put("[M-H]−", 1.007276d);
+        mapMZNegativeAdductsTMP.put("[M-H]-", 1.007276d);
         mapMZNegativeAdductsTMP.put("[M+Cl]−", -34.969402d);
         mapMZNegativeAdductsTMP.put("[M+HCOOH-H]−", -44.998201d);
         mapMZNegativeAdductsTMP.put("[M-H-H2O]−", 19.01839d);
         mapMZNegativeAdductsTMP.put("[2M-H]−", 1.007276d);
-        mapMZNegativeAdductsTMP.put("[M-2H]2−", 1.007276d);
+        mapMZNegativeAdductsTMP.put("[M-2H]2−", 1.007276d*2);
         MAPMZNEGATIVEADDUCTS = Collections.unmodifiableMap(mapMZNegativeAdductsTMP);
     }
-
 }
