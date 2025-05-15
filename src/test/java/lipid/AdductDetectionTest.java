@@ -94,7 +94,7 @@ public class AdductDetectionTest {
 
     @Test
     public void shouldDetectDimerAdductAmongNegativeOptions() {
-        // Calculamos manualmente las m/z esperadas
+        // Calculamos manualmente las m/z esperadas.
         Peak p1 = new Peak(349.2427, 80000.0);   // [M-H]⁻
         Peak p2 = new Peak(331.2321, 60000.0);   // [M-H-H2O]⁻
         Peak p3 = new Peak(385.2190, 55000.0);   // [M+Cl]⁻
